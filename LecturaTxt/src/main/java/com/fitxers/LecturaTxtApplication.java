@@ -9,7 +9,6 @@ import com.fitxers.gestio.FilesMangement;
 @SpringBootApplication
 public class LecturaTxtApplication implements CommandLineRunner{
 
-	 
 	public static void main(String[] args) {
 		SpringApplication.run(LecturaTxtApplication.class, args);
 	}
@@ -21,5 +20,4 @@ public class LecturaTxtApplication implements CommandLineRunner{
 		management.getFileFromFolder();
 		System.out.println("Adeu Jaume");
 	}
-
 }

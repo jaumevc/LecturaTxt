@@ -2,13 +2,10 @@ package com.fitxers.gestio;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -19,7 +16,6 @@ public class FilesMangement {
 	private static final String RUTH_RESULTFILE = "C:\\Users\\jvalls\\Desktop\\Tasques_Ramon\\29_50110_sergi\\FILES\\RESULTFILE\\resultat.txt";
 	
 	public void getFileFromFolder(){
-		
 //		Map<String, Integer> map = new HashMap();
 		//per obtenir el mapa ordenat per les claus de major a menor 
 		Map<String, Integer> map = new TreeMap<>();
