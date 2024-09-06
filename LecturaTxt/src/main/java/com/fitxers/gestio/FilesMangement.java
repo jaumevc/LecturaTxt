@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -20,7 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class FilesMangement {
 
 	private static final String RUTH_FILE = "C:\\Users\\jvalls\\Desktop\\Tasques_Ramon\\29_50110_sergi\\FILES\\MDIAE2024.txt";
-	private static final String RUTH_EPIGRAFS_NAME = "C:\\Users\\jvalls\\Desktop\\Tasques_Ramon\\29_50110_sergi\\FILES\\epigrafs.txt";
+	private static final String RUTH_EPIGRAFS_NAME = "C:\\Users\\jvalls\\Desktop\\Tasques_Ramon\\29_50110_sergi\\FILES\\epigrafsSeccions.txt";
 //	private static final String RUTH_RESULTFILE = "C:\\Users\\jvalls\\Desktop\\Tasques_Ramon\\29_50110_sergi\\FILES\\RESULTFILE\\resultat.txt";
 	private static final String RUTH_RESULTFILE = "C:\\Users\\jvalls\\Desktop\\Tasques_Ramon\\29_50110_sergi\\FILES\\RESULTFILE\\resultat.xlsx";
 
@@ -32,7 +33,7 @@ public class FilesMangement {
 		Map<String, Integer> noSuperficieMap = new TreeMap<>();
 		Map<String, String> epigrafNameMap = new TreeMap<>();
 
-//		List<String> linies = new ArrayList<>();
+		List<String> linies = new ArrayList<>();
 
 		createMapsFromRuthFile(totalMap, superficieMap, noSuperficieMap);
 		
@@ -69,23 +70,17 @@ public class FilesMangement {
 			Map<String, Integer> noSuperficieMap ,Map<String, String> epigrafNameMap) {
 		Workbook workbook = new XSSFWorkbook();
 		
-		String sheetName = "Resultats Totals";
+		String[] headers = {"Epigrafs", "Secció", "Comptador", "Nom Epigraf"};
+		String[] sheetNames = {"Resultats Totals", "Resultats Amb Superfícies", "Resultats Sense Superfícies"};
 		
-		String headerNameKey = "Epigrafs";
-		String headerNameValue = "Comptador";
-		String headerEpigrafName = "Nom Epigraf";
+		//TOTALS
+		createSheet(workbook, totalMap, epigrafNameMap, sheetNames[0], headers);
 		
-		createSheet(workbook, totalMap, epigrafNameMap,sheetName, headerNameKey, headerNameValue, headerEpigrafName);
-		
-		sheetName = "Resultats Amb Superfícies";
-		headerNameValue = "Amb Superfícies";
-		
-		createSheet(workbook, superficieMap, epigrafNameMap,sheetName, headerNameKey, headerNameValue, headerEpigrafName);
+		//AMB SUPERFICIES
+		createSheet(workbook, superficieMap, epigrafNameMap,sheetNames[1], headers);
 
-		sheetName = "Resultats Sense Superfícies";
-		headerNameValue = "Sense Superfícies";
-		
-		createSheet(workbook, noSuperficieMap, epigrafNameMap,sheetName, headerNameKey, headerNameValue, headerEpigrafName);
+		//SENSE SUPERFICIES
+		createSheet(workbook, noSuperficieMap, epigrafNameMap,sheetNames[2], headers);
 
 		// Escriu el workbook a un fitxer
 		try (FileOutputStream fileOut = new FileOutputStream(RUTH_RESULTFILE)) {
@@ -134,8 +129,9 @@ public class FilesMangement {
 			String linia;
 			while ((linia = brEpi.readLine()) != null) {
 				String epigrafs = linia.substring(0, 4);
-				String epigrafName = linia.substring(5, 45);
-				epigrafNameMap.put(epigrafs, epigrafName);
+				String seccions = linia.substring(5,6);
+				String epigrafName = linia.substring(7, 47);
+				epigrafNameMap.put(seccions+epigrafs, epigrafName);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -155,20 +151,26 @@ public class FilesMangement {
 					if (linia.length() >= 384) {
 						// Extreu els caràcters de les posicions 151 a 154
 						String epigrafs = linia.substring(150, 154);
+						
+						String seccions = linia.substring(149, 150);
+						String seccionsEpigrafs = linia.substring(149, 154);
+						
 						// Actualitza el comptador al map de totals
-						totalMap.put(epigrafs, totalMap.getOrDefault(epigrafs, 0) + 1);
+//						totalMap.put(epigrafs, totalMap.getOrDefault(epigrafs, 0) + 1);
+						totalMap.put(seccionsEpigrafs, totalMap.getOrDefault(seccionsEpigrafs, 0) + 1);
+						
 
 						String superficie = linia.substring(366, 383);
 						Long superfValue = Long.parseLong(superficie);
 						if (superfValue > 0) {
-							superficieMap.put(epigrafs, superficieMap.getOrDefault(epigrafs, 0) + 1);
+							superficieMap.put(seccionsEpigrafs, superficieMap.getOrDefault(seccionsEpigrafs, 0) + 1);
 						} else {
-							noSuperficieMap.put(epigrafs, noSuperficieMap.getOrDefault(epigrafs, 0) + 1);
+							noSuperficieMap.put(seccionsEpigrafs, noSuperficieMap.getOrDefault(seccionsEpigrafs, 0) + 1);
 						}
 					}
 					// Processa la línia que comença amb '2' aquí
 //					linies.add(linia);
-//                    System.out.println(linia);
+//					System.out.println(linia);
 				}
 			}
 		} catch (Exception e) {
@@ -177,25 +179,26 @@ public class FilesMangement {
 		
 	}
 
-	private void createSheet(Workbook workbook, Map<String, Integer> map,  Map<String, String> namesMap,String sheetName, String headerNameKey,
-			String headerNameValue, String headerEpigrafName) {
+	private void createSheet(Workbook workbook, Map<String, Integer> map, Map<String, String> epigrafNameMap,
+			String sheetName, String[] headers) {
 		
 		Sheet sheet = workbook.createSheet(sheetName);
 
 		// Crear la fila de capçalera
 		Row headerRow = sheet.createRow(0);
-		headerRow.createCell(0).setCellValue(headerNameKey);
-		headerRow.createCell(1).setCellValue(headerNameValue);
-		headerRow.createCell(2).setCellValue(headerEpigrafName);
+		headerRow.createCell(0).setCellValue(headers[0]);//Epigrafs
+		headerRow.createCell(1).setCellValue(headers[1]);//Secció
+		headerRow.createCell(2).setCellValue(headers[2]);//comptador
+		headerRow.createCell(3).setCellValue(headers[3]);//Nom Epigraf
 
 		int rowNum = 1;
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
 			Row row = sheet.createRow(rowNum++);
-			row.createCell(0).setCellValue(entry.getKey());
-			row.createCell(1).setCellValue(entry.getValue());
-			row.createCell(2).setCellValue(namesMap.get(entry.getKey()));
+			row.createCell(0).setCellValue(entry.getKey().substring(1, 5));
+			row.createCell(1).setCellValue(entry.getKey().substring(0,1));
+			row.createCell(2).setCellValue(entry.getValue());
+			row.createCell(3).setCellValue(epigrafNameMap.get(entry.getKey()));
 		}
-
 	}
 
 }
