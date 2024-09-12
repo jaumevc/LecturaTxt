@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,9 +74,19 @@ public class FilesMangement {
 	private List<String> getDataFromLines(List<String> linies, List<String> epigrafsAmbSupAmbNumFixe) {
 		List<String> lineswithEpiSupNum = new ArrayList<>();
 
+		int cont=0;
 		for (String linia : linies) {
 			// Extreu els caràcters de les posicions 151 a 154
-			String epigrafs = linia.substring(150, 154);
+			
+			
+			String epigrafs = linia.substring(150, 154).trim();
+			
+			
+//			if("012".equals(epigrafs)) {
+//				cont++;
+//				System.out.println();
+//			}	
+			
 			String superficie = linia.substring(366, 383);
 			Long superfValue = Long.parseLong(superficie);
 			if (superfValue > 0) {
@@ -86,6 +97,8 @@ public class FilesMangement {
 				}
 			}
 		}
+		Collections.sort(lineswithEpiSupNum);
+//		System.out.println("CONTADOR: "+cont);
 		return lineswithEpiSupNum;
 	}
 
@@ -278,7 +291,7 @@ public class FilesMangement {
 			String superficie = line.substring(366, 383);
 			Long superfValue = Long.parseLong(superficie);
 
-			String numFixe = line.substring(2, 16);
+			String numFixe = line.substring(2, 15);
 			String nif = line.substring(16, 25);
 			String nomEmpresa = line.substring(25, 65);
 			String quota = line.substring(401, 407);
